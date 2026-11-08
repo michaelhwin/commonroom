@@ -4,6 +4,8 @@ Watch videos together in sync. Everyone opens the same room link, one person pic
 
 Commonroom is a FastAPI server plus a single HTML page. There is no database, no build step, and no accounts.
 
+<img width="1408" height="732" alt="Capture" src="https://github.com/user-attachments/assets/d0fd4cba-9eeb-4084-9deb-833d18de42a3" />
+
 ## Features
 
 - **Synced playback** for YouTube links and direct video files (`.mp4`, `.webm`)
