@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watch together</title>
+  <style>
+    :root {
+      --bg: #e7ebe3;
+      --panel: #f8f9f4;
+      --ink: #1b2a25;
+      --muted: #5d6e66;
+      --line: #cdd6cb;
+      --accent: #1f6f5c;
+      --on-accent: #ffffff;
+      --brass: #8a5f10;
+      --stage: #0e1613;
+      --who-l: 30%;
+      font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101a17;
+        --panel: #17251f;
+        --ink: #e5ede8;
+        --muted: #8fa399;
+        --line: #294036;
+        --accent: #7fd1b0;
+        --on-accent: #0c1a14;
+        --brass: #e0b259;
+        --stage: #070c0a;
+        --who-l: 72%;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 20px 16px 32px;
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+    }
+
+    .wordmark {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: 1.7rem;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: .9rem;
+      margin: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .brand,
+    .tools {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 12px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    body[data-conn="on"] .dot {
+      background: #2fa36b;
+    }
+
+    body[data-conn="off"] .dot {
+      background: #c2493d;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 820px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    #stage {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--stage);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--stage);
+    }
+
+    #ytWrap {
+      aspect-ratio: 16 / 9;
+      background: var(--stage);
+    }
+
+    #ytWrap iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    #empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      background: var(--stage);
+      color: #cfdcd5;
+    }
+
+    #empty p {
+      margin: 0;
+      max-width: 28ch;
+      font-family: "Iowan Old Style", Palatino, Georgia, serif;
+      font-size: 1.25rem;
+    }
+
+    form {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type=text],
+    input[type=url] {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: var(--on-accent);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: 7px 14px;
+      font-weight: 500;
+    }
+
+    button.small {
+      padding: 3px 10px;
+      font-size: .8rem;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    aside {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    aside section {
+      padding: 14px;
+    }
+
+    aside section+section {
+      border-top: 1px solid var(--line);
+    }
+
+    h2 {
+      font-size: .95rem;
+      margin: 0 0 10px;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    li .name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: none;
+      font-size: .8rem;
+      font-weight: 700;
+      color: #fff;
+      background: hsl(var(--h) 42% 38%);
+    }
+
+    .badge {
+      font-size: .75rem;
+      color: var(--brass);
+      border: 1px solid var(--brass);
+      border-radius: 999px;
+      padding: 0 8px;
+    }
+
+    #openRow {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    #log {
+      height: 280px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-right: 2px;
+    }
+
+    .msg {
+      max-width: 88%;
+      align-self: flex-start;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 6px 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .msg.mine {
+      align-self: flex-end;
+      background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+    }
+
+    .who {
+      display: block;
+      font-size: .75rem;
+      font-weight: 700;
+      color: hsl(var(--h) 45% var(--who-l));
+    }
+
+    .notice {
+      align-self: center;
+      color: var(--muted);
+      font-size: .82rem;
+      font-style: italic;
+      text-align: center;
+    }
+
+    .card {
+      max-width: 420px;
+      margin: 16vh auto 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 28px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card .wordmark {
+      font-size: 2rem;
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: .9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <section id="join" class="card">
+      <p class="wordmark">Commonroom</p>
+      <p class="muted" id="joinRoom"></p>
+      <form id="joinForm">
+        <input id="nameInput" type="text" maxlength="24" placeholder="Your name" required autofocus>
+        <button type="submit">Join room</button>
+      </form>
+    </section>
+
+    <div id="app" hidden>
+      <header>
+        <div class="brand"><span class="wordmark">Commonroom</span><span class="chip" id="title"></span></div>
+        <div class="tools">
+          <span class="status"><i class="dot"></i><span id="status">Connecting…</span></span>
+          <button id="copyBtn" type="button" class="ghost">Copy invite link</button>
+        </div>
+      </header>
+      <div class="layout">
+        <div class="stack">
+          <div id="stage">
+            <video id="player" controls playsinline></video>
+            <div id="ytWrap" hidden>
+              <div id="ytPlayer"></div>
+            </div>
+            <div id="empty">
+              <p id="emptyText">Waiting for the host to pick a video.</p>
+            </div>
+          </div>
+          <form id="loadForm" hidden>
+            <input id="urlInput" type="url" placeholder="Paste a YouTube link or a direct video link (.mp4, .webm)"
+              required>
+            <button type="submit">Load video</button>
+          </form>
+          <p class="muted" id="hint"></p>
+        </div>
+        <aside>
+          <section>
+            <h2>In this room</h2>
+            <ul id="roster"></ul>
+            <label id="openRow" class="muted" hidden><input id="openBox" type="checkbox"> Everyone can control
+              playback</label>
+          </section>
+          <section>
+            <h2>Chat</h2>
+            <div id="log" aria-live="polite"></div>
+            <form id="chatForm">
+              <input id="chatInput" type="text" maxlength="500" placeholder="Send a message" autocomplete="off"
+                required>
+              <button type="submit">Send</button>
+            </form>
+          </section>
+        </aside>
+      </div>
+    </div>
+    <div id="toast" role="status" hidden></div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    let room = params.get("room");
+    if (!room) { room = Math.random().toString(36).slice(2, 8); history.replaceState(null, "", "?room=" + room); }
+    $("joinRoom").textContent = "You are joining " + room;
+    $("title").textContent = room;
+    try { $("nameInput").value = localStorage.getItem("wp-name") || ""; } catch (_) { }
+
+    const player = $("player");
+    let ws, me = { id: null, canControl: false, host: null };
+    let applyingRemote = false;
+    const send = (msg) => ws && ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify(msg));
+
+    $("joinForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = $("nameInput").value.trim();
+      try { localStorage.setItem("wp-name", name); } catch (_) { }
+      document.title = "Commonroom – " + room;
+      $("join").hidden = true;
+      $("app").hidden = false;
+      connect(name);
+    });
+
+    function connect(name) {
+      const proto = location.protocol === "https:" ? "wss" : "ws";
+      ws = new WebSocket(`${proto}://${location.host}/ws/${room}`);
+      ws.onopen = () => { document.body.dataset.conn = "on"; send({ type: "join", name }); };
+      ws.onclose = () => { document.body.dataset.conn = "off"; $("status").textContent = "Disconnected. Reload to rejoin."; };
+      ws.onmessage = async (event) => {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "hello") me.id = msg.id;
+        else if (msg.type === "roster") renderRoster(msg);
+        else if (msg.type === "chat") addChat(msg);
+        else if (msg.type === "notice") addLine(msg.text, "notice");
+        else if (msg.type === "state") await applyState(msg);
+      };
+    }
+
+    // ---- Media layer: HTML5 <video> for files, YouTube IFrame player for YouTube ----
+    const yt = { player: null, id: null };
+    let mode = "file";
+    let ytPromise = null;
+    let last = { pos: 0, at: Date.now() };
+
+    function ytId(raw) {
+      try {
+        const u = new URL(raw);
+        const h = u.hostname.replace(/^(www|m)\./, "");
+        let id = null;
+        if (h === "youtu.be") id = u.pathname.slice(1).split("/")[0];
+        else if (["youtube.com", "music.youtube.com", "youtube-nocookie.com"].includes(h)) {
+          if (u.pathname === "/watch") id = u.searchParams.get("v");
+          else { const m = u.pathname.match(/^\/(embed|shorts|live|v)\/([^/?]+)/); if (m) id = m[2]; }
+        }
+        return id && /^[\w-]{11}$/.test(id) ? id : null;
+      } catch (_) { return null; }
+    }
+
+    function ensureYT() {
+      if (ytPromise) return ytPromise;
+      ytPromise = new Promise((resolve) => {
+        window.onYouTubeIframeAPIReady = () => {
+          yt.player = new YT.Player("ytPlayer", {
+            width: "100%", height: "100%",
+            playerVars: { playsinline: 1, rel: 0 },
+            events: {
+              onReady: () => resolve(true),
+              onStateChange: onYtState,
+              onError: () => addLine("This YouTube video is unavailable or cannot be embedded", "notice"),
+            },
+          });
+        };
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        tag.onerror = () => { ytPromise = null; addLine("Could not load the YouTube player", "notice"); resolve(false); };
+        document.head.append(tag);
+      });
+      return ytPromise;
+    }
+
+    function showMode(m) {
+      mode = m;
+      player.hidden = m !== "file";
+      $("ytWrap").hidden = m !== "yt";
+      if (m === "file" && yt.player && yt.player.pauseVideo) yt.player.pauseVideo();
+      if (m === "yt") player.pause();
+    }
+
+    async function setSource(url, startAt = 0) {
+      hasSource = true;
+      $("empty").hidden = true;
+      const id = ytId(url);
+      if (id) {
+        showMode("yt");
+        if (!(await ensureYT())) return;
+        if (yt.id !== id) { yt.id = id; yt.player.cueVideoById({ videoId: id, startSeconds: startAt }); }
+      } else {
+        showMode("file");
+        yt.id = null;
+        if (player.getAttribute("src") !== url) {
+          player.src = url;
+          await new Promise((r) => player.addEventListener("loadedmetadata", r, { once: true }));
+        }
+      }
+    }
+
+    const getTime = () => (mode === "yt" ? (yt.player && yt.player.getCurrentTime ? yt.player.getCurrentTime() : 0) : player.currentTime);
+
+    function seekTo(t) {
+      if (mode === "yt") { if (yt.player && yt.player.seekTo) yt.player.seekTo(t, true); }
+      else player.currentTime = t;
+    }
+
+    async function setPlaying(on) {
+      if (mode === "yt") {
+        if (!yt.player || !yt.player.playVideo) return;
+        if (on) {
+          yt.player.playVideo();
+          setTimeout(() => {
+            const st = yt.player.getPlayerState();
+            if (st !== 1 && st !== 3) addLine("Click the video to allow playback", "notice");
+          }, 1500);
+        } else yt.player.pauseVideo();
+      } else {
+        try { if (on) await player.play(); else player.pause(); }
+        catch (_) { addLine("Click the video to allow playback", "notice"); }
+      }
+    }
+
+    function onYtState(e) {
+      if (applyingRemote) return;
+      const t = yt.player.getCurrentTime();
+      if (e.data === 1) send({ type: "play", time: t });
+      else if (e.data === 2) send({ type: "pause", time: t });
+    }
+
+    // YouTube has no seek event, so watch for jumps in the playback position.
+    setInterval(() => {
+      if (mode !== "yt" || !yt.player || !yt.player.getCurrentTime) return;
+      const now = Date.now(), pos = yt.player.getCurrentTime();
+      const playing = yt.player.getPlayerState() === 1;
+      const expected = last.pos + (playing ? (now - last.at) / 1000 : 0);
+      if (!applyingRemote && Math.abs(pos - expected) > 1.5) send({ type: "seek", time: pos });
+      last = { pos, at: now };
+    }, 500);
+
+    async function applyState(msg) {
+      applyingRemote = true;
+      if (msg.url) await setSource(msg.url, msg.time);
+      if (Math.abs(getTime() - msg.time) > 0.7) seekTo(msg.time);
+      await setPlaying(msg.playing);
+      setTimeout(() => (applyingRemote = false), mode === "yt" ? 1500 : 400);
+    }
+
+    let hasSource = false;
+    const hue = (name) => { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+
+    function renderRoster(r) {
+      me.host = r.host;
+      const self = r.users.find((u) => u.id === me.id);
+      me.canControl = !!self && self.canControl;
+      const isHost = me.id === r.host;
+
+      $("status").textContent = r.users.length === 1 ? "Just you" : `${r.users.length} watching`;
+      $("loadForm").hidden = !me.canControl;
+      $("openRow").hidden = !isHost;
+      $("openBox").checked = r.open;
+      $("hint").textContent = me.canControl
+        ? "Send the invite link to friends. Everyone in the room stays in sync."
+        : "The host controls playback. Ask them to let you control it.";
+      if (!hasSource) {
+        $("emptyText").textContent = me.canControl
+          ? "Nothing playing yet. Paste a video link below to start."
+          : "Waiting for the host to pick a video.";
+      }
+
+      $("roster").replaceChildren(...r.users.map((u) => {
+        const li = document.createElement("li");
+        const av = document.createElement("span");
+        av.className = "avatar";
+        av.style.setProperty("--h", hue(u.name));
+        av.textContent = (u.name.trim()[0] || "?").toUpperCase();
+        const name = document.createElement("span");
+        name.className = "name";
+        name.textContent = u.name + (u.id === me.id ? " (you)" : "");
+        li.append(av, name);
+        if (u.id === r.host) {
+          const b = document.createElement("span");
+          b.className = "badge"; b.textContent = "host";
+          li.append(b);
+        } else if (isHost && !r.open) {
+          const btn = document.createElement("button");
+          btn.className = "small ghost";
+          btn.textContent = u.canControl ? "Revoke control" : "Allow control";
+          btn.onclick = () => send({ type: "grant", id: u.id, allowed: !u.canControl });
+          li.append(btn);
+        } else if (u.canControl && !r.open) {
+          const b = document.createElement("span");
+          b.className = "badge"; b.textContent = "can control";
+          li.append(b);
+        }
+        return li;
+      }));
+    }
+
+    function addChat(msg) {
+      const mine = msg.id === me.id;
+      const d = document.createElement("div");
+      d.className = "msg" + (mine ? " mine" : "");
+      d.style.setProperty("--h", hue(msg.name));
+      const who = document.createElement("span");
+      who.className = "who"; who.textContent = mine ? "You" : msg.name;
+      const text = document.createElement("span");
+      text.textContent = msg.text;
+      d.append(who, text);
+      $("log").append(d);
+      $("log").scrollTop = $("log").scrollHeight;
+    }
+
+    function toast(text) {
+      const el = $("toast");
+      el.textContent = text; el.hidden = false;
+      clearTimeout(toast.t);
+      toast.t = setTimeout(() => (el.hidden = true), 1800);
+    }
+
+    $("copyBtn").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(location.href); toast("Invite link copied"); }
+      catch (_) { window.prompt("Copy this invite link:", location.href); }
+    });
+
+    function addLine(text, cls) {
+      const p = document.createElement("div");
+      p.className = cls || "";
+      p.textContent = text;
+      const log = $("log");
+      log.append(p);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    player.addEventListener("play", () => !applyingRemote && send({ type: "play", time: player.currentTime }));
+    player.addEventListener("pause", () => !applyingRemote && send({ type: "pause", time: player.currentTime }));
+    player.addEventListener("seeked", () => !applyingRemote && send({ type: "seek", time: player.currentTime }));
+
+    $("loadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const url = $("urlInput").value.trim();
+      send({ type: "load", url });
+      applyingRemote = true;
+      await setSource(url, 0);
+      setTimeout(() => (applyingRemote = false), 1500);
+    });
+    $("openBox").addEventListener("change", (e) => send({ type: "set_open", open: e.target.checked }));
+    $("chatForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      send({ type: "chat", text: $("chatInput").value });
+      $("chatInput").value = "";
+    });
+  </script>
+</body>
+
+</html>
